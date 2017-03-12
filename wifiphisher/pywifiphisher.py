@@ -10,10 +10,12 @@ import fcntl
 import curses
 import socket
 import struct
+import logging
 from blessings import Terminal
 from threading import Thread
 from subprocess import Popen, PIPE, check_output
 from shutil import copyfile
+import pyric.pyw as pyw
 from wifiphisher.common.constants import *
 import wifiphisher.common.deauth as deauth
 import wifiphisher.common.recon as recon
@@ -29,6 +31,19 @@ VERSION = "1.2GIT"
 args = 0
 mon_MAC = 0
 APs = {}  # for listing APs
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# create a file handler
+handler = logging.FileHandler('ap.log')
+handler.setLevel(logging.INFO)
+
+# create a logging format
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
+handler.setFormatter(formatter)
+
+# add the handlers to the logger
+logger.addHandler(handler)
 
 
 def parse_args():
@@ -491,6 +506,7 @@ def display_access_points(information, mac_matcher):
                 box.addstr(item_position-(max_row*(page_number-1)), 2,
                            display_text, highlight_text)
             else:
+                logger.info("item:"+str(item_position-(max_row*(page_number-1)))+" display_text:"+display_text+" normal:"+ str(normal_text))
                 box.addstr(item_position-(max_row*(page_number-1)), 2, display_text, normal_text)
 
             # stop if it is the last item in page
@@ -545,7 +561,7 @@ class WifiphisherEngine:
 
         if os.path.isfile('/tmp/wifiphisher-webserver.tmp'):
             os.remove('/tmp/wifiphisher-webserver.tmp')
-     
+
         print '[' + R + '!' + W + '] Closing'
         sys.exit(0)
 
@@ -689,13 +705,13 @@ class WifiphisherEngine:
         # mode for network discovery before (e.g. when --nojamming is enabled).
         self.network_manager.set_interface_mode(ap_iface, "managed")
         # Start AP
-        self.access_point.set_interface(ap_iface.get_name())        
+        self.access_point.set_interface(ap_iface.get_name())
         self.access_point.set_channel(channel)
         self.access_point.set_essid(essid)
         if args.presharedkey:
-            self.access_point.set_psk(args.presharedkey)              
+            self.access_point.set_psk(args.presharedkey)
         if args.internetinterface:
-            self.access_point.set_internet_interface(args.presharedkey)              
+            self.access_point.set_internet_interface(args.presharedkey)
         print '[' + T + '*' + W + '] Starting the fake access point...'
         try:
             self.access_point.start()
