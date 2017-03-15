@@ -217,10 +217,7 @@ class AccessPointFinder(object):
 
         # get the name of the access point
         # if the name is no utf8 compatible use pre set name
-        try:
-            name = elt_section.info.decode("utf8")
-        except UnicodeDecodeError:
-            name = non_decodable_name
+        name = elt_section.info
 
         # just update signal strength in case of discovered
         # access point
